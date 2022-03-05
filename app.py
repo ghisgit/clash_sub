@@ -1,10 +1,7 @@
-from urllib import parse
-
 import requests
 from flask import Flask, request
-from markupsafe import escape
 
-import vmess
+from node import node
 
 app = Flask(__name__)
 
@@ -21,24 +18,19 @@ def proxies():
     try:
         urls = request.args.get('url').split('|')
         include = request.args.get('include')
+        exclude = request.args.get('exclude')
         host = request.args.get('host')
         udp = request.args.get('udp')
-        LVmessNod = []
+        print(f'include: {include}\nexclude: {exclude}\nhost: {host}\nudp: {udp}')
+        LNodes = []
         for i in urls:
-            node = vmess.VmessNode()
-            if include:
-                node.in_node = include
-            if host:
-                node.host_ = host
-            if udp:
-                node.udp_ = udp
             res = requests.get(i, headers={
                 "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KH"
                 + "TML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56"
             })
-            LVmessNod += node.loads(res.text)
+            LNodes += node(res.text, host, udp, include, exclude)
         text = 'proxies:\n'
-        for i in LVmessNod:
+        for i in LNodes:
             text += '\n'.join(['  '+j for j in i.split('\n')])
             text += '\n'
         return text

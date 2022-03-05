@@ -1,10 +1,16 @@
 import re
 import json
-import base64
 
+from BaseParse import base_decode
 
 class VmessNode():
     def __init__(self):
+        self.skip_node = ['剩余流量', '过期时间']
+        self.in_node = ''
+        self.ex_node = ''
+        self.host_ = None
+        self.udp_ = None
+
         self.__name = ''
         self.__type = ''
         self.__server = ''
@@ -17,14 +23,10 @@ class VmessNode():
         self.__skip_cert_verify = ''
         self.__servername = ''
         self.__network = ''
+        self.__net_type = ''
         self.__path = ''
         self.__host = ''
         self.__headers= {}
-
-        self.skip_node = ['剩余流量', '过期时间']
-        self.in_node = ''
-        self.host_ = None
-        self.udp_ = None
 
     @property
     def name(self):
@@ -113,6 +115,13 @@ class VmessNode():
         self.__network = t
 
     @property
+    def nettype(self):
+        return self.__net_type
+    @nettype.setter
+    def nettype(self, t):
+        self.__net_type = t
+
+    @property
     def path(self):
         if self.__path:
             return self.__path
@@ -136,24 +145,20 @@ class VmessNode():
         self.__headers = t
 
     def loads(self, vs):
-        node_urls = base64.b64decode(vs)
-        if isinstance(node_urls, bytes):
-            node_urls = node_urls.decode('utf8')
+        node_urls = base_decode(vs)
         node_url_list = [i for i in node_urls.split('\n') if i]
         node_list = []
         for v in node_url_list:
-            # print(v)
             node = self.load(v)
             if node:
                 node_list.append(node)
-                # print(node)
         return node_list
 
     def load(self, v):
         node_url = re.match('(.*)://(.*)', v)
         if node_url[1] != 'vmess':
             return
-        v2_node = json.loads(base64.b64decode(node_url[2]))
+        v2_node = json.loads(base_decode(node_url[2]))
         # print(v2_node)
         self.name = v2_node.get('ps')
         self.type = 'vmess'
@@ -167,6 +172,7 @@ class VmessNode():
         self.skip_cert_verify = 'false' if v2_node.get('verify_cert') else 'true'
         self.servername = v2_node.get('sni')
         self.network = v2_node.get('net')
+        self.nettype =  v2_node.get('type')
         self.path =  v2_node.get('path')
         self.host =  v2_node.get('host')
         for i in v2_node.keys():
@@ -175,26 +181,29 @@ class VmessNode():
         return self.generate()
 
     def generate(self):
-        if self.host_:
-            self.host = self.host_
-            if self.servername:
-                self.servername = self.host
-            if self.headers:
-                self.headers.update({'Host': self.host})
-        try:
-            if int(self.udp_) > 0:
-                self.udp = 'true'
-            else:
-                self.udp = 'false'
-        except:
-            ...
         if self.skip_node:
             for i in self.skip_node:
                 if re.search(i, self.name):
                     return
+        if self.ex_node:
+            if re.search(self.ex_node, self.name):
+                return
         if self.in_node:
             if not re.search(self.in_node, self.name):
                 return
+        if self.host_:
+            self.host = self.host_
+            if self.servername:
+                self.servername = self.host
+            self.headers.update({'Host': self.host})
+        if self.udp_:
+            try:
+                if int(self.udp_) > 0:
+                    self.udp = 1
+                else:
+                    self.udp = 0
+            except:
+                ...
 
         print(self.name)
         node = f'- name: {self.name}\n'
@@ -215,22 +224,23 @@ class VmessNode():
         if self.network == 'ws':
             node += (' '*2 + f'network: ws\n')
             node += (' '*2 + f'ws-opts:\n')
-            node += (' '*4 + f'path: {self.path}\n')
-            node += (' '*4 + 'headers:\n')
-            node += (' '*6 + f'Host: {self.host}')
+            node += (' '*4 + f'path: {self.path}')
+            if self.host:
+                node += ('\n' + ' '*4 + 'headers:\n')
+                node += (' '*6 + f'Host: {self.host}')
 
         elif self.network == 'tcp':
-            node += (' '*2 + f'network: http\n')
-            node += (' '*2 + 'http-opts:\n')
-            node += (' '*4 + 'method: GET\n')
-            node += (' '*4 + 'path:\n')
-            node += (' '*6 + f'- {self.path}\n')
-            if self.headers:
-                node += (' '*4 + 'headers:')
-                for i in self.headers.items():
-                    node += '\n'
-                    node += (' '*6 + i[0] + ':\n')
-                    node += (' '*8 + '- ' + i[1])
+            if self.nettype == 'http':
+                node += (' '*2 + f'network: http\n')
+                node += (' '*2 + 'http-opts:\n')
+                node += (' '*4 + 'path:\n')
+                node += (' '*6 + f'- {self.path}')
+                if self.headers:
+                    node += ('\n' + ' '*4 + 'headers:')
+                    for k, v in self.headers.items():
+                        node += ('\n' + ' '*6 + k + ':\n')
+                        node += (' '*8 + '- ' + v)
+
         temp_in_node = self.in_node
         temp_host = self.host_
         temp_udp = self.udp_

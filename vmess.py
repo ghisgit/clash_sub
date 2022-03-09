@@ -242,10 +242,12 @@ class VmessNode():
                         node += (' '*8 + '- ' + v)
 
         temp_in_node = self.in_node
+        temp_ex_node = self.ex_node
         temp_host = self.host_
         temp_udp = self.udp_
         self.__init__()
         self.in_node = temp_in_node
+        self.ex_node = temp_ex_node
         self.host_ = temp_host
         self.udp_ = temp_udp
         return node

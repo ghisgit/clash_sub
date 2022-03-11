@@ -7,6 +7,7 @@ from flask import Flask, request
 from markupsafe import escape
 
 from node import node
+from ip import domain_for_ip
 from config import sub_config, timeout
 
 app = Flask(__name__)
@@ -48,8 +49,20 @@ with app.test_request_context('/getrules'):
 @app.route('/getrules')
 def getrules():
     url = request.args.get('url')
+    ip_ = request.args.get('ip')
+    if not ip_ :
+        ip_ = 0
     res = requests.get(url)
-    return res.text
+    data = res.text
+    if int(ip_):
+        rules = re.findall('DOMAIN,(.*)', res.text)
+        for i in rules:
+            ips = domain_for_ip(i)
+            for j in ips:
+                data += ('\n' + ' '*2 + f'- IP-CIDR,{j}/32')
+        return data
+    else:
+        return data
 
 @app.route('/class/<name>/<localfile>')
 def group(name, localfile):

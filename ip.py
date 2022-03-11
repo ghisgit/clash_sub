@@ -13,7 +13,9 @@ def domain_for_ip(domain: str):
     + "TML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56"})
     data = json.loads(res.text)
     ips = []
-    for i in data.get('Answer'):
-        if i.get('type') == 1:
-            ips.append(i.get('data'))
+    base_ip = data.get('Answer')
+    if base_ip:
+        for i in base_ip:
+            if i.get('type') == 1:
+                ips.append(i.get('data'))
     return ips

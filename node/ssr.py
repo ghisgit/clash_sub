@@ -1,6 +1,6 @@
 import re
 
-from BaseParse import base_decode
+from BaseParse import base64_decode
 
 
 class SsrNode:
@@ -77,7 +77,7 @@ class SsrNode:
         self.__protocolparam = t
 
     def loads(self, ss):
-        node_urls = base_decode(ss)
+        node_urls = base64_decode(ss)
         node_url_list = [i for i in node_urls.split('\n') if i]
         node_list = []
         for v in node_url_list:
@@ -90,8 +90,7 @@ class SsrNode:
         node_url = re.match('(.*)://(.*)', s)
         if node_url[1] != 'ssr':
             return
-        ssr_node = base_decode(node_url[2])
-        # print(ssr_node)
+        ssr_node = base64_decode(node_url[2])
         ssr_base = ssr_node.split('/?')
         ssr_up = ssr_base[0].split(':')
         ssr_down = ssr_base[1].split('&')
@@ -101,7 +100,7 @@ class SsrNode:
         self.protocol = ssr_up[2]
         self.method = ssr_up[3]
         self.obfs = ssr_up[4]
-        self.password =base_decode(ssr_up[5])
+        self.password =base64_decode(ssr_up[5])
 
         for i in ssr_down:
             k = i.split('=')[0]
@@ -111,11 +110,11 @@ class SsrNode:
                 v = ''
 
             if k == 'protoparam':
-                self.protocolparam = base_decode(v)
+                self.protocolparam = base64_decode(v)
             elif k == 'obfsparam':
-                self.obfsparam = base_decode(v)
+                self.obfsparam = base64_decode(v)
             elif k == 'remarks':
-                self.name = base_decode(v)
+                self.name = base64_decode(v)
         return self.generate()
 
     def generate(self):

@@ -6,8 +6,8 @@ import requests
 from flask import Flask, request
 from markupsafe import escape
 
-from node import node
-from ip import domain_for_ip
+from node.node import node
+from rule.ip import domain_for_ip
 from config import sub_config, timeout
 
 app = Flask(__name__)
@@ -64,21 +64,21 @@ def getrules():
     else:
         return data
 
-@app.route('/class/<name>/<localfile>')
-def group(name, localfile):
+@app.route('/class/<name>/<rule>')
+def group(name, rule):
     try:
         if not os.path.lexists('sub'):
             os.mkdir('sub')
         name = escape(name)
-        localfile = escape(localfile)
+        rule = escape(rule)
         if not os.path.lexists(f'sub/{name}'):
             os.mkdir(f'sub/{name}')
         try:
-            file_time = int(os.stat(f'sub/{name}/{localfile}.yaml').st_mtime)
+            file_time = int(os.stat(f'sub/{name}/{rule}.yaml').st_mtime)
         except:
             file_time = 0
         new_time = int(time.time())
-        if (new_time - file_time) > timeout:
+        if (new_time - file_time) >= timeout:
             sub = sub_config.get(name)
             urls = sub.get('url').split('|')
             include = sub.get('include')
@@ -101,12 +101,12 @@ def group(name, localfile):
                         if re.search(v, i):
                             f.write('\n'.join(['  '+j for j in i.split('\n')]))
                             f.write('\n')
-            f = open(f'sub/{name}/{localfile}.yaml', encoding='utf8')
+            f = open(f'sub/{name}/{rule}.yaml', encoding='utf8')
             data = f.read()
             f.close()
             return data
         else:
-            f = open(f'sub/{name}/{localfile}.yaml', encoding='utf8')
+            f = open(f'sub/{name}/{rule}.yaml', encoding='utf8')
             data = f.read()
             f.close()
             return data

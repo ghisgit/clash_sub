@@ -1,6 +1,6 @@
 import base64
 
-def base_decode(s:str or bytes):
+def base64_decode(s:str or bytes):
     if isinstance(s, str):
         s = s.encode('utf8')
     kv = {b'_': b'/', b'-': b'+'}

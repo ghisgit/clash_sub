@@ -1,7 +1,7 @@
 import re
 import json
 
-from BaseParse import base_decode
+from BaseParse import base64_decode
 
 class VmessNode():
     def __init__(self):
@@ -145,7 +145,7 @@ class VmessNode():
         self.__headers = t
 
     def loads(self, vs):
-        node_urls = base_decode(vs)
+        node_urls = base64_decode(vs)
         node_url_list = [i for i in node_urls.split('\n') if i]
         node_list = []
         for v in node_url_list:
@@ -158,8 +158,7 @@ class VmessNode():
         node_url = re.match('(.*)://(.*)', v)
         if node_url[1] != 'vmess':
             return
-        v2_node = json.loads(base_decode(node_url[2]))
-        # print(v2_node)
+        v2_node = json.loads(base64_decode(node_url[2]))
         self.name = v2_node.get('ps')
         self.type = 'vmess'
         self.server = v2_node.get('add')

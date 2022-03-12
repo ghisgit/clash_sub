@@ -2,10 +2,10 @@ import re
 
 from vmess import VmessNode
 from ssr import SsrNode
-from BaseParse import base_decode
+from BaseParse import base64_decode
 
 def node(sub, host, udp, include, exclude):
-    node_urls = base_decode(sub)
+    node_urls = base64_decode(sub)
     node_url_list = [i for i in node_urls.split('\n') if i]
     node_list = []
     vmess_node = VmessNode()

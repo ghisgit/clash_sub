@@ -2,7 +2,7 @@ import os
 import re
 import time
 
-from flask import Flask
+from flask import Flask, request
 from markupsafe import escape
 
 import tools
@@ -70,3 +70,8 @@ def config(name, rule):
     with open(f'sub/{name}/{rule}.yaml', encoding='utf8') as f:
         data = f.read()
     return data
+
+@app.route('/geturles')
+def getrules():
+    url = request.args.get('url')
+    return tools.geturl(url)

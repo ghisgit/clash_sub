@@ -1,7 +1,7 @@
 sub_config = {
-    'hty': {'url': '',
-    'include': '',
-    'exclude': '',
+    'name': {'url': '',
+    'in': '',
+    'out': '',
     'host': '',
     'udp': None,
     'list': {

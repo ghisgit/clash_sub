@@ -29,7 +29,7 @@ def config(name, rule):
         return 'Node config error'
     TO = tools.readTimeout() # File Timeout
     try:
-        filetime = os.path.getmtime(f'sub/{name}/{k}.yaml')
+        filetime = os.path.getmtime(f'sub/{name}/{rule}.yaml')
     except:
         filetime = 0
     newtime = time.time()

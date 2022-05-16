@@ -33,7 +33,7 @@ def config(name, rule):
     except:
         filetime = 0
     newtime = time.time()
-    if int(newtime-filetime) < TO:
+    if int(newtime-filetime) > TO:
         url = NC['url']
         i = NC['in']
         o = NC['out']

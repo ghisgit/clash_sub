@@ -71,7 +71,7 @@ def config(name, rule):
         data = f.read()
     return data
 
-@app.route('/geturles')
+@app.route('/getrules')
 def getrules():
     url = request.args.get('url')
     return tools.geturl(url)

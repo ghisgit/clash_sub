@@ -56,9 +56,9 @@ class SsrNode():
         self.__data += (' '*2 + f'obfs: {self.obfs}\n')
         self.__data += (' '*2 + f'protocol: {self.protocol}\n')
 
-        if not self.obfs == 'origin':
+        if not self.obfs == 'plain':
             self.__data += (' '*2 + f'obfs-param: {self.obfs_param}\n')
-        if not self.protocol == 'plain':
+        if not self.protocol == 'origin':
             self.__data += (' '*2 + f'protocol-param: \"{self.protocol_param}\"\n')
 
         self.__data += (' '*2 + f'udp: {self.udp}')

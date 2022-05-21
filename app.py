@@ -45,12 +45,15 @@ def config(name, rule):
         clashNodes = []
         serverDomain = []
         for nurl in nodeurls:
-            if re.match('ssr://', nurl):
-                clashNodes.append(ssr.SsrNode(nurl, h, u, i, o).node)
-            elif re.match('trojan://', nurl):
-                clashNodes.append(trojan.TrojanNode(nurl, h, u, i, o).node)
-            elif re.match('vmess://', nurl):
-                clashNodes.append(vmess.VmessNode(nurl, h, u, i, o).node)
+            try:
+                if re.match('ssr://', nurl):
+                    clashNodes.append(ssr.SsrNode(nurl, h, u, i, o).node)
+                elif re.match('trojan://', nurl):
+                    clashNodes.append(trojan.TrojanNode(nurl, h, u, i, o).node)
+                elif re.match('vmess://', nurl):
+                    clashNodes.append(vmess.VmessNode(nurl, h, u, i, o).node)
+            except:
+                continue
         for k, v in l.items():
             with open(f'sub/{name}/{k}.yaml', 'w', encoding='utf8') as f:
                 f.write('proxies:\n')

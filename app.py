@@ -33,27 +33,31 @@ def config(name, rule):
     except:
         filetime = 0
     newtime = time.time()
-    if int(newtime-filetime) > TO:
+    if int(newtime - filetime) > TO:
         url = NC['url']
         i = NC['in']
         o = NC['out']
         h = NC['host']
         u = NC['udp']
         l = dict(NC['list'])
-        basetext = tools.geturl(url)
-        nodeurls = base64_decode(basetext).split('\n')
-        clashNodes = []
-        serverDomain = []
-        for nurl in nodeurls:
+        for i in url.split('|'):
             try:
-                if re.match('ssr://', nurl):
-                    clashNodes.append(ssr.SsrNode(nurl, h, u, i, o).node)
-                elif re.match('trojan://', nurl):
-                    clashNodes.append(trojan.TrojanNode(nurl, h, u, i, o).node)
-                elif re.match('vmess://', nurl):
-                    clashNodes.append(vmess.VmessNode(nurl, h, u, i, o).node)
+                basetext = tools.geturl(i)
             except:
                 continue
+            nodeurls = base64_decode(basetext).split('\n')
+            clashNodes = []
+            serverDomain = []
+            for nurl in nodeurls:
+                try:
+                    if re.match('ssr://', nurl):
+                        clashNodes.append(ssr.SsrNode(nurl, h, u, i, o).node)
+                    elif re.match('trojan://', nurl):
+                        clashNodes.append(trojan.TrojanNode(nurl, h, u, i, o).node)
+                    elif re.match('vmess://', nurl):
+                        clashNodes.append(vmess.VmessNode(nurl, h, u, i, o).node)
+                except:
+                    continue
         for k, v in l.items():
             with open(f'sub/{name}/{k}.yaml', 'w', encoding='utf8') as f:
                 f.write('proxies:\n')

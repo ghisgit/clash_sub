@@ -39,6 +39,8 @@ class SsrNode():
         if not isinstance(self.__data, str):
             return ''
 
+        print(self.name)
+
         for inn in self.in_node:
             if not re.search(inn, self.name):
                 return ''

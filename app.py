@@ -40,14 +40,14 @@ def config(name, rule):
         h = NC['host']
         u = NC['udp']
         l = dict(NC['list'])
-        for i in url.split('|'):
+        clashNodes = []
+        serverDomain = []
+        for _i in url.split('|'):
             try:
-                basetext = tools.geturl(i)
+                basetext = tools.geturl(_i)
             except:
                 continue
             nodeurls = base64_decode(basetext).split('\n')
-            clashNodes = []
-            serverDomain = []
             for nurl in nodeurls:
                 try:
                     if re.match('ssr://', nurl):

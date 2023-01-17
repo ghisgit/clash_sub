@@ -1,0 +1,26 @@
+{
+    "global": {
+        "cache": 0,
+        "in": "",
+        "out": "",
+        "ipout": "",
+        "udp": 0,
+        "tls": 0,
+        "cert": 0,
+        "host": ""
+    },
+    "all": {
+        "url": [
+        ],
+        "in": "",
+        "out": "",
+        "ipout": "",
+        "udp": 0,
+        "tls": 0,
+        "cert": 0,
+        "host": "",
+        "filter": {
+            "all": ".*"
+        }
+    }
+}

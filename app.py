@@ -1,15 +1,23 @@
 import os
-import re
 import time
+import json
 
-from flask import Flask, request
+from flask import Flask
 from markupsafe import escape
 
-import tools
-from node import vmess, ssr, trojan
-from node.BaseParse import base64_decode
+import node.parse as parse
+
+
 
 app = Flask(__name__)
+
+
+
+if not os.path.lexists('cache'):
+    os.mkdir('cache')
+if not os.path.lexists('cache/sub'):
+    os.mkdir('cache/sub')
+
 
 
 @app.route('/')
@@ -20,65 +28,35 @@ def hello():
 def config(name, rule):
     name = escape(name)
     rule = escape(rule)
-    if not os.path.lexists('sub'):
-        os.mkdir('sub')
-    if not os.path.lexists(f'sub/{name}'):
-        os.mkdir(f'sub/{name}')
-    NC = tools.readNodeconfig(name) # Node Config
-    if not NC:
-        return 'Node config error'
-    TO = tools.readTimeout() # File Timeout
+    if not os.path.lexists(f'cache/sub/{name}'):
+        os.mkdir(f'cache/sub/{name}')
+    global_config = json.load(open('config.json')).get('global')
+    config = json.load(open('config.json')).get(name)
+    config['in'] = config['in'] if config['in'] else global_config['in']
+    config['out'] = config['out'] if config['out'] else global_config['out']
+    config['ipout'] = config['ipout'] if config['ipout'] else global_config['ipout']
+    config['udp'] = config['udp'] if config['udp'] else global_config['udp']
+    config['tls'] = config['tls'] if config['tls'] else global_config['tls']
+    config['cert'] = config['cert'] if config['cert'] else global_config['cert']
+    config['host'] = config['host'] if config['host'] else global_config['host']
     try:
-        filetime = os.path.getmtime(f'sub/{name}/{rule}.yaml')
+        filetime = os.path.getmtime(f'cache/sub/{name}/{rule}.yaml')
     except:
         filetime = 0
     newtime = time.time()
-    if int(newtime - filetime) > TO:
-        url = NC['url']
-        i = NC['in']
-        o = NC['out']
-        h = NC['host']
-        u = NC['udp']
-        l = dict(NC['list'])
-        clashNodes = []
-        serverDomain = []
-        for _i in url.split('|'):
-            try:
-                basetext = tools.geturl(_i)
-            except:
-                continue
-            nodeurls = base64_decode(basetext).split('\n')
-            for nurl in nodeurls:
-                try:
-                    if re.match('ssr://', nurl):
-                        clashNodes.append(ssr.SsrNode(nurl, h, u, i, o).node)
-                    elif re.match('trojan://', nurl):
-                        clashNodes.append(trojan.TrojanNode(nurl, h, u, i, o).node)
-                    elif re.match('vmess://', nurl):
-                        clashNodes.append(vmess.VmessNode(nurl, h, u, i, o).node)
-                except:
-                    continue
-        for k, v in l.items():
-            with open(f'sub/{name}/{k}.yaml', 'w', encoding='utf8') as f:
-                f.write('proxies:\n')
-                for i in [i for i in clashNodes if i]:
-                    serverDomain.append(re.search(r'server: (.*)', i).group(1))
-                    if re.search(v, i):
-                        f.write('\n'.join([' ' * 2 + j for j in i.split('\n')])+'\n')
-        temp = []
-        [temp.append(i) for i in serverDomain if not i in temp]
-        with open(f'sub/{name}/servers.yaml', 'w', encoding='utf8') as f:
-            f.write('payload:\n')
-            for i in temp:
-                if not re.match('\d+.\d+.\d+.\d+', i):
-                    f.write('  - DOMAIN,' + i + '\n')
-                else:
-                    f.write('  - IP-CIDR,' + i + '/32\n')
-    with open(f'sub/{name}/{rule}.yaml', encoding='utf8') as f:
-        data = f.read()
-    return data
 
-@app.route('/getrules')
-def getrules():
-    url = request.args.get('url')
-    return tools.geturl(url)
+    if int(newtime - filetime) > global_config['cache']:
+        with open(f'cache/sub/{name}/servers.yaml', 'w+', encoding='utf8') as f:
+            f.write('payload:')
+        for k,_ in config.get('filter').items():
+            with open(f'cache/sub/{name}/{k}.yaml', 'w+', encoding='utf8') as f:
+                f.write('proxies:')
+        parse.SubParse(name, config)
+        return open(f'cache/sub/{name}/{rule}.yaml', encoding='utf8').read()
+    else:
+        return open(f'cache/sub/{name}/{rule}.yaml', encoding='utf8').read()
+
+
+
+if __name__ == '__main__':
+    app.run('127.0.0.1', '11180')

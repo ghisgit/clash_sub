@@ -1,5 +1,7 @@
 .venv
 __pycache__
-sub
+cache
 
 test.py
+
+*.txt
